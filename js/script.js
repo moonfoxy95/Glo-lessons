@@ -1,6 +1,23 @@
 'use strict'
 
 // БЛОК 1 ОБЪЯВЛЕНИЕ ПЕРЕМЕННЫХ
+let title = document.getElementsByTagName('h1')[0];
+//let buttons = document.getElementsByClassName('handler_btn');
+let buttonCalculate = document.getElementsByClassName('handler_btn')[0];
+let buttonReset = document.getElementsByClassName('handler_btn')[1];
+let buttonPlus = document.querySelector('.screen-btn');
+let itemsPercent = document.querySelectorAll('.other-items.percent');
+let itemsNumber = document.querySelectorAll('.other-items.number');
+let inputRange = document.querySelector('.rollback input[type="range"]');
+let spanRange = document.querySelector('.rollback span.range-value');
+
+let totalInputs = document.getElementsByClassName('total-input');
+for (let input of totalInputs) {
+  console.log(input);
+}
+
+let screenElems = document.querySelectorAll('.screen');
+
 let appData = {
   title: '',
   screens: [],
@@ -25,11 +42,11 @@ let appData = {
       let price = 0;
 
       do {
-        name = prompt('Какие типы экранов нужно разработать?');
+        name = prompt('Какие типы экранов нужно разработать?', 'all');
       } while (!appData.isString(name));
 
       do {
-        price = prompt('Сколько будет стоить данная работа?')
+        price = prompt('Сколько будет стоить данная работа?', '20000')
       } while (!appData.isNumber(price));
 
       appData.screens.push({
@@ -48,7 +65,7 @@ let appData = {
       } while (!appData.isString(name));
 
       do {
-        price = prompt('Сколько услуга ' + i + ' будет стоить?');
+        price = prompt('Сколько услуга ' + i + ' будет стоить?', '1500');
       } while (!appData.isNumber(price));
 
       if (name in appData.services) {
@@ -112,7 +129,7 @@ let appData = {
     appData.getTitle();
     appData.getFullPrice();
     appData.getServicePercentPrice();
-    appData.logger();
+    //appData.logger();
   },
 }
 
