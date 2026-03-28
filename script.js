@@ -51,13 +51,20 @@ let appData = {
         price = prompt('Сколько услуга ' + i + ' будет стоить?');
       } while (!appData.isNumber(price));
 
+      if (name in appData.services) {
+        name = name + i;
+      }
+
       appData.services[name] = +price;
     }
   },
   addPrices: function () {
-    for (let screen of appData.screens) {
-      appData.screenPrice += screen.price;
-    }
+    // for (let screen of appData.screens) {
+    //   appData.screenPrice += screen.price;
+    // }
+    appData.screenPrice = appData.screens.reduce(function (acc, item) {
+      return acc.price + item.price;
+    })
 
     for (let key in appData.services) {
       appData.allServicePrices += appData.services[key];
