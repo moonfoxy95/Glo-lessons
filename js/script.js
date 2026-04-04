@@ -11,100 +11,143 @@ let itemsNumber = document.querySelectorAll('.other-items.number');
 let inputRange = document.querySelector('.rollback input[type="range"]');
 let spanRange = document.querySelector('.rollback span.range-value');
 
-let totalInputs = document.getElementsByClassName('total-input');
-for (let input of totalInputs) {
-  console.log(input);
-}
+let total = document.getElementsByClassName('total-input')[0];
+let totalCount = document.getElementsByClassName('total-input')[1];
+let totalCountOther = document.getElementsByClassName('total-input')[2];
+let fullTotalCount = document.getElementsByClassName('total-input')[3];
+let totalCountRollback = document.getElementsByClassName('total-input')[4];
 
+let screenElemsParent = document.querySelectorAll('.main-controls__views.element')[0];
 let screenElems = document.querySelectorAll('.screen');
 
 let appData = {
   title: '',
   screens: [],
+  screensCount: 0,
   screenPrice: 0,
   adaptive: true,
-  allServicePrices: 0,
+  servicePricesPercent: 0,
+  servicePricesNumber: 0,
   fullPrice: 0,
   servicePercentPrice: 0,
-  services: {},
-  rollback: 10,
-  asking: function () {
-    do {
-      appData.title = prompt('Как называется ваш проект?', ' КаЛьКулятор Верстки');
-    } while (!appData.isString(appData.title));
+  servicesPercent: {},
+  servicesNumber: {},
+  rollback: 0,
+  init: function () {
+    appData.addTitle();
+    buttonCalculate.addEventListener('click', appData.calculate);
+    buttonPlus.addEventListener('click', appData.addScreenBlock);
 
-    appData.screenPrice = +appData.screenPrice;
+    buttonCalculate.disabled = true;
+    buttonCalculate.style.backgroundColor = 'grey';
+    screenElemsParent.addEventListener('input', appData.validateScreen);
 
-    appData.adaptive = true || confirm('Нужен ли адаптив?');
+    inputRange.addEventListener('input', appData.updateRange);
+  },
+  resetValues: function () {
+    appData.screens = [];
+    appData.screensCount = 0;
+    appData.screenPrice = 0;
+    appData.servicePricesPercent = 0;
+    appData.servicePricesNumber = 0;
+    appData.fullPrice = 0;
+    appData.servicePercentPrice = 0;
+    appData.servicesPercent = {};
+    appData.servicesNumber = {};
+  },
+  updateRange: function () {
+    spanRange.textContent = inputRange.value + '%';
+    appData.rollback = +inputRange.value;
+  },
+  validateScreen: function () {
+    screenElems = document.querySelectorAll('.screen');
 
-    for (let i = 0; i < 2; i++) {
-      let name;
-      let price = 0;
+    for (let screenElem of screenElems) {
+      let select = screenElem.querySelector('select');
+      let input = screenElem.querySelector('input');
 
-      do {
-        name = prompt('Какие типы экранов нужно разработать?', 'all');
-      } while (!appData.isString(name));
+      if (select.value === '' || input.value === '') {
+        buttonCalculate.disabled = true;
+        buttonCalculate.style.backgroundColor = 'grey';
+        return;
+      }
+    }
 
-      do {
-        price = prompt('Сколько будет стоить данная работа?', '20000')
-      } while (!appData.isNumber(price));
+    buttonCalculate.disabled = false;
+    buttonCalculate.style.backgroundColor = 'revert-layer';
+  },
+  addTitle: function () {
+    document.title = title.textContent;
+  },
+  addScreenBlock: function () {
+    let cloneScreen = screenElems[0].cloneNode(true);
+    cloneScreen.querySelector('input').value = null;
+    buttonPlus.before(cloneScreen);
+    appData.validateScreen();
+  },
+  addScreens: function () {
+    screenElems = document.querySelectorAll('.screen');
+
+    screenElems.forEach(function (screen, index) {
+      let select = screen.querySelector('select');
+      let input = screen.querySelector('input');
+
+      let selectName = select.options[select.selectedIndex].textContent;
 
       appData.screens.push({
-        id: i,
-        name: name,
-        price: +price,
+        id: index,
+        name: selectName,
+        price: +select.value * +input.value,
+        count: +input.value,
       })
-    }
-
-    for (let i = 1; i < 3; i++) {
-      let name;
-      let price = 0;
-
-      do {
-        name = prompt('Какой дополнительный тип услуги нужен?', 'почистить');
-      } while (!appData.isString(name));
-
-      do {
-        price = prompt('Сколько услуга ' + i + ' будет стоить?', '1500');
-      } while (!appData.isNumber(price));
-
-      if (name in appData.services) {
-        name = name + i;
-      }
-
-      appData.services[name] = +price;
-    }
+    })
   },
-  addPrices: function () {
-    // for (let screen of appData.screens) {
-    //   appData.screenPrice += screen.price;
-    // }
-    appData.screenPrice = appData.screens.reduce(function (acc, item) {
-      return acc.price + item.price;
+  addServices: function () {
+    itemsPercent.forEach(function (item) {
+      let checkbox = item.querySelector('input[type="checkbox"]');
+      let label = item.querySelector('label');
+      let input = item.querySelector('input[type="text"]');
+
+      if (checkbox.checked) {
+        appData.servicesPercent[label.textContent] = +input.value;
+      }
     })
 
-    for (let key in appData.services) {
-      appData.allServicePrices += appData.services[key];
+    itemsNumber.forEach(function (item) {
+      let checkbox = item.querySelector('input[type="checkbox"]');
+      let label = item.querySelector('label');
+      let input = item.querySelector('input[type="text"]');
+
+      if (checkbox.checked) {
+        appData.servicesNumber[label.textContent] = +input.value;
+      }
+    })
+  },
+  addPrices: function () {
+    // appData.screenPrice = appData.screens.reduce(function (acc, item) {
+    //   return acc.price + item.price;
+    // })
+
+    for (let screen of appData.screens) {
+      appData.screenPrice += +screen.price;
     }
-  },
-  isNumber: function (num) {
-    return !isNaN(parseFloat(num)) && isFinite(num);
-  },
-  isString: function (str) {
-    return !isFinite(str) && str.trim() !== '';
-  },
-  getFullPrice: function () {
-    appData.fullPrice = appData.screenPrice + appData.allServicePrices;
-  },
-  getTitle: function () {
-    let trimTitle = appData.title.trim();
-    let firstLetter = trimTitle.substring(0, 1).toUpperCase();
-    let leftoverLetters = trimTitle.substring(1).toLowerCase();
-    appData.title = firstLetter + leftoverLetters;
-  },
-  getServicePercentPrice: function () {
+
+    for (let key in appData.servicesNumber) {
+      appData.servicePricesNumber += appData.servicesNumber[key];
+    }
+
+    for (let key in appData.servicesPercent) {
+      appData.servicePricesPercent += appData.screenPrice * (appData.servicesPercent[key] / 100);
+    }
+
+    for (let screen of appData.screens) {
+      appData.screensCount += +screen.count;
+    }
+
+    appData.fullPrice = appData.screenPrice + appData.servicePricesNumber + appData.servicePricesPercent;
     appData.servicePercentPrice = appData.fullPrice - (appData.fullPrice * (appData.rollback / 100));
   },
+
   getRollbackMessage: function (price) {
     switch (true) {
       case (price >= 30000):
@@ -117,25 +160,30 @@ let appData = {
         return 'Что-то пошло не так';
     }
   },
+  showResult: function () {
+    total.value = appData.screenPrice;
+    totalCountOther.value = appData.servicePricesPercent + appData.servicePricesNumber;
+    fullTotalCount.value = appData.fullPrice;
+    totalCountRollback.value = appData.servicePercentPrice;
+    totalCount.value = appData.screensCount;
+  },
   logger: function () {
     console.log('appData: ', appData);
-    for (let property in appData) {
-      console.log(`${property} (${typeof (appData[property])})`);
-    }
   },
-  start: function () {
-    appData.asking();
+  calculate: function () {
+    appData.resetValues();
+    appData.addScreens();
+    appData.addServices();
     appData.addPrices();
-    appData.getTitle();
-    appData.getFullPrice();
-    appData.getServicePercentPrice();
-    //appData.logger();
+
+    appData.logger();
+    appData.showResult();
   },
 }
 
 // БЛОК 2 ОПИСАНИЕ ФУНКЦИЙ
 
 // БЛОК 3 ФУНКЦИОНАЛ
-appData.start();
+appData.init();
 
 // БЛОК 4 ВЫВОД В КОНСОЛЬ
